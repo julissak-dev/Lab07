@@ -1,0 +1,43 @@
+version: "3.8"
+services:
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: jwt_db
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+
+  backend:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      DB_HOST: db
+      DB_USER: root
+      DB_PASSWORD: rootpassword
+      DB_NAME: jwt_db
+      DB_DIALECT: mysql
+      AUTH_SECRET: secret-key
+      JWT_EXPIRATION: 86400
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "4173:80"
+    environment:
+      VITE_API_URL: http://backend:3000
+    depends_on:
+      - backend
+
+volumes:
+  db_data:

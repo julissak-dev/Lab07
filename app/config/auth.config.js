@@ -1,4 +1,4 @@
 export default {
-  secret: "secret-key",
-  jwtExpiration: 86400
+  secret: process.env.AUTH_SECRET || "secret-key",
+  jwtExpiration: Number(process.env.JWT_EXPIRATION) || 86400
 };
