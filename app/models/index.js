@@ -1,5 +1,6 @@
 import Sequelize from "sequelize";
 import dbConfig from "../config/db.config.js";
+
 import userModel from "./user.model.js";
 import roleModel from "./role.model.js";
 
@@ -9,14 +10,32 @@ const sequelize = new Sequelize(
   dbConfig.PASSWORD,
   {
     host: dbConfig.HOST,
+    port: dbConfig.PORT,
     dialect: dbConfig.dialect,
-    logging: false
+
+    logging: false,
+
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false
+      }
+    },
+
+    pool: {
+      max: 5,
+      min: 0,
+      acquire: 30000,
+      idle: 10000
+    }
   }
 );
 
 const db = {};
+
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
+
 db.user = userModel(sequelize, Sequelize);
 db.role = roleModel(sequelize, Sequelize);
 
@@ -25,6 +44,7 @@ db.user.belongsToMany(db.role, {
   foreignKey: "userId",
   otherKey: "roleId"
 });
+
 db.role.belongsToMany(db.user, {
   through: "user_roles",
   foreignKey: "roleId",
